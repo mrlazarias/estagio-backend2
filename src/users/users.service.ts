@@ -7,8 +7,7 @@ export class UsersService {
   constructor(private readonly prisma: PrismaService) {}
 
   async createUser(createUserDto: CreateUserDto) {
-    const { name, email, birthdate, biography } = createUserDto;
-
+    const { email } = createUserDto;
     // Verifique se o usuário com o mesmo e-mail já existe
     const existingUser = await this.prisma.user.findUnique({
       where: { email },
@@ -20,12 +19,7 @@ export class UsersService {
 
     // Crie um novo usuário
     const newUser = await this.prisma.user.create({
-      data: {
-        name,
-        email,
-        birthdate,
-        biography,
-      },
+      data: createUserDto,
     });
 
     return newUser;
@@ -38,9 +32,11 @@ export class UsersService {
   }
 
   async findUserById(id: string) {
+    const idNumber: number = Number(id);
+
     // Encontre um usuário por ID
     const user = await this.prisma.user.findUnique({
-      where: { id },
+      where: { id: idNumber },
     });
 
     if (!user) {
@@ -51,11 +47,12 @@ export class UsersService {
   }
 
   async updateUser(id: string, updateUserDto: UpdateUserDto) {
+    const idNumber: number = Number(id);
     const { name, email, birthdate, biography } = updateUserDto;
 
     // Atualize os dados do usuário
     const updatedUser = await this.prisma.user.update({
-      where: { id },
+      where: { id: idNumber },
       data: {
         name,
         email,
@@ -72,15 +69,13 @@ export class UsersService {
   }
 
   async removeUser(id: string) {
+    const idNumber: number = Number(id);
     // Exclua um usuário
-    const deletedUser = await this.prisma.user.delete({
-      where: { id },
+
+    await this.findUserById(id);
+
+    await this.prisma.user.delete({
+      where: { id: idNumber },
     });
-
-    if (!deletedUser) {
-      throw new NotFoundException('Usuário não encontrado.');
-    }
-
-    return deletedUser;
   }
 }
